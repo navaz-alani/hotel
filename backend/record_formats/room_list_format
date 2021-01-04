@@ -1,0 +1,8 @@
+# lines beginning with a '#' character are comments
+# csv file header
+room_number;price;attributes
+# record format: <unit>;<uint>;<state - string>;<comma seperated attributes - (quoted)? string>
+# state string must be one of "OCCUPIED", "UNAVAILABLE" or "FREE"
+# example records:
+1;25;"OCCUPIED";"attr_1,attr_2,attr_3"
+6;75;"FREE";"attr_2,attr_6"

@@ -1,0 +1,5 @@
+# lines beginning with a '#' character are comments
+# format: <attribute - (quoted)? string>
+attr_1
+attr_2
+attr_3

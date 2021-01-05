@@ -10,8 +10,8 @@ import (
 // Possible room states.
 const (
 	StateOccupied    State = "OCCUPIED"
-	StateUnavailable           = "UNAVAILABLE"
-	StateFree                  = "FREE"
+	StateUnavailable       = "UNAVAILABLE"
+	StateFree              = "FREE"
 )
 
 // Parts of a record.

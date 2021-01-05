@@ -1,4 +1,4 @@
-package hotel
+package room
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 // Possible room states.
 const (
-	StateOccupied    RoomState = "OCCUPIED"
+	StateOccupied    State = "OCCUPIED"
 	StateUnavailable           = "UNAVAILABLE"
 	StateFree                  = "FREE"
 )
@@ -22,35 +22,35 @@ const (
 	EntryAttributes
 )
 
-// `RoomNumber` is the ID/room number of a room.
-type RoomNumber uint
+// `Number` is the ID/room number of a room.
+type Number uint
 
-// `RoomAttribute` is a property that a room can have.
-type RoomAttribute string
+// `Attribute` is a property that a room can have.
+type Attribute string
 
-// `RoomState` indicates the current state of the `Room`.
-type RoomState string
+// `State` indicates the current state of the `Room`.
+type State string
 
 // `Room` is a room in a hotel. It has an `ID` (the room number), a price, a
 // current state and a set of attributes.
 type Room struct {
 	mu    *sync.RWMutex
-	id    RoomNumber
+	id    Number
 	price uint
-	state RoomState
-	attrs map[RoomAttribute]struct{}
+	state State
+	attrs map[Attribute]struct{}
 }
 
 // `NewRoom` returns a pointer to a `Room` with the given `id` (room number).
-func NewRoom(id RoomNumber) *Room {
+func NewRoom(id Number) *Room {
 	return &Room{
 		mu:    &sync.RWMutex{},
 		id:    id,
-		attrs: make(map[RoomAttribute]struct{}),
+		attrs: make(map[Attribute]struct{}),
 	}
 }
 
-func NewRoomFromRecord(record []string, validAttributes []RoomAttribute) (*Room, error) {
+func NewRoomFromRecord(record []string, validAttributes []Attribute) (*Room, error) {
 	const recordLen = 4
 	if len(record) != recordLen {
 		return nil, fmt.Errorf("invalid record: expected %d entries", recordLen)
@@ -63,7 +63,7 @@ func NewRoomFromRecord(record []string, validAttributes []RoomAttribute) (*Room,
 	if err != nil {
 		return nil, fmt.Errorf("invalid record (price: '%s'): %s", record[1], err.Error())
 	}
-	var state RoomState
+	var state State
 	stateStr := record[EntryState]
 	switch stateStr {
 	case "OCCUPIED":
@@ -75,13 +75,13 @@ func NewRoomFromRecord(record []string, validAttributes []RoomAttribute) (*Room,
 	default:
 		return nil, fmt.Errorf("invalid record (state: '%s;): unrecognized state", stateStr)
 	}
-	roomAttrs := make(map[RoomAttribute]struct{})
+	roomAttrs := make(map[Attribute]struct{})
 	for _, attr := range strings.Split(record[EntryAttributes], ",") {
-		roomAttrs[RoomAttribute(attr)] = struct{}{}
+		roomAttrs[Attribute(attr)] = struct{}{}
 	}
 	room := &Room{
 		mu:    &sync.RWMutex{},
-		id:    RoomNumber(uint(id64)),
+		id:    Number(uint(id64)),
 		price: uint(price64),
 		state: state,
 		attrs: roomAttrs,
@@ -90,20 +90,20 @@ func NewRoomFromRecord(record []string, validAttributes []RoomAttribute) (*Room,
 }
 
 // `ID` returns the ID (room number) of the room.
-func (r *Room) ID() RoomNumber {
+func (r *Room) ID() Number {
 	// id is immutable - do not need to lock mutex for read (no writers exist)
 	return r.id
 }
 
 // `AddAttribute` adds the given `RoomAttribute`, `attr`, to the room.
-func (r *Room) AddAttribute(attr RoomAttribute) {
+func (r *Room) AddAttribute(attr Attribute) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.attrs[attr] = struct{}{}
 }
 
 // `Satisfies` returns whether the room satisfies the given attributes `attrs`.
-func (r *Room) Satisfies(attrs []RoomAttribute) bool {
+func (r *Room) Satisfies(attrs []Attribute) bool {
 	r.mu.RLock()
 	defer r.mu.RLocker()
 	for _, attr := range attrs {

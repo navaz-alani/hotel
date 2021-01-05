@@ -8,13 +8,15 @@ import (
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/navaz-alani/hotel/room"
 )
 
 type Hotel struct {
 	mu        *sync.RWMutex
 	numRooms  uint
-	rooms     map[RoomNumber]*Room
-	roomAttrs []RoomAttribute
+	rooms     map[room.Number]*room.Room
+	roomAttrs []room.Attribute
 }
 
 // `NewHotelFromData` creates a new `Hotel` from the attributes data contained
@@ -26,7 +28,7 @@ type Hotel struct {
 func NewHotelFromData(attrData, roomData string, strict bool) (*Hotel, error) {
 	hotel := &Hotel{
 		mu:    &sync.RWMutex{},
-		rooms: make(map[RoomNumber]*Room),
+		rooms: make(map[room.Number]*room.Room),
 	}
 	if err := hotel.loadAttributes(attrData); err != nil {
 		return nil, err
@@ -55,7 +57,7 @@ func (h *Hotel) loadRooms(roomData string, strict bool) error {
 
 	csvReader := csv.NewReader(f)
 	initialRecord := true
-	rooms := make(map[RoomNumber]*Room)
+	rooms := make(map[room.Number]*room.Room)
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -68,7 +70,7 @@ func (h *Hotel) loadRooms(roomData string, strict bool) error {
 			initialRecord = false
 			continue
 		}
-		room, err := NewRoomFromRecord(record, h.roomAttrs)
+		room, err := room.NewRoomFromRecord(record, h.roomAttrs)
 		if err != nil && strict {
 			return fmt.Errorf("load err: room parse err: %s", err.Error())
 		}
@@ -117,7 +119,7 @@ func (h *Hotel) loadAttributes(attrData string) error {
 		}
 		h.roomAttrs = append(
 			h.roomAttrs,
-			RoomAttribute(attr),
+			room.Attribute(attr),
 		)
 	}
 	return nil
